@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using OpenCvSharp;
 
 namespace MutoRecipe
 {
@@ -18,19 +17,12 @@ namespace MutoRecipe
         internal static extern bool PrintWindow(IntPtr hWnd, IntPtr hdcBlt, int nFlags);
 
         [DllImport("user32.dll")]
-        public static extern Int32 GetWindowLong(IntPtr hWnd, Int32 nIndex);
+        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
         [DllImport("user32.dll")]
-        public static extern Int32 SetWindowLong(IntPtr hWnd, Int32 nIndex, Int32 dwNewLong);
+        public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
-
-        public static int GWL_STYLE = -16;
-        public static int WS_CHILD = 0x40000000;
-
     }
 }

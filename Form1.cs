@@ -38,6 +38,7 @@ namespace MutoRecipe
             "헉튀김", "앗볶읍", "이런면", "저런찜", "허허말이", "호호탕", "크헉구이", "으악샐러드", "낄낄볶음밥", "깔깔만두", "휴피자", "하빵", "오잉피클", "큭큭죽", "흑흑화채",
             "엉엉순대"
         };
+        private object locker = new object();
 
         public Form1()
         {
@@ -55,13 +56,15 @@ namespace MutoRecipe
 
         private double SearchImage(Bitmap screenBitmap, Bitmap searchBitmap)
         {
-           
-            using (var screenMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(screenBitmap))
-            using (var findMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(searchBitmap))
-            using (var res = screenMat.MatchTemplate(findMat, TemplateMatchModes.CCoeffNormed))
+            lock (locker)
             {
-                Cv2.MinMaxLoc(res, out _, out var val, out _, out _);
-                return val;
+                using (var screenMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(screenBitmap))
+                using (var findMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(searchBitmap))
+                using (var res = screenMat.MatchTemplate(findMat, TemplateMatchModes.CCoeffNormed))
+                {
+                    Cv2.MinMaxLoc(res, out _, out var val, out _, out _);
+                    return val;
+                }
             }
         }
 
@@ -92,15 +95,14 @@ namespace MutoRecipe
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            //var window = Win32.FindWindow("MapleStoryClass", "MapleStory"); 
-            var window = Win32.FindWindow("Photo_Lightweight_Viewer", null);
+            var window = Win32.FindWindow("MapleStoryClass", "MapleStory"); 
+            //var window = Win32.FindWindow("Photo_Lightweight_Viewer", null);
             if (window != IntPtr.Zero)
             {
                 label1.Visible = false;
                 var graphics = Graphics.FromHwnd(window);
                 var rect = Rectangle.Round(graphics.VisibleClipBounds);
-                rect.Height /= 2;
-                var bmp = new Bitmap(rect.Width, rect.Height);
+                var bmp = new Bitmap(rect.Width, rect.Height / 2);
                 using (var gr = Graphics.FromImage(bmp))
                 {
                     var hdc = gr.GetHdc();
@@ -108,7 +110,6 @@ namespace MutoRecipe
                     gr.ReleaseHdc(hdc);
                 }
 
-                pictureBox1.BackgroundImage = bmp;
                 var image = ToImageSharpImage<Rgba32>(bmp);
                 image.Mutate(data => data.Grayscale());
                 var imageBitmap = ToBitmap(image);
@@ -135,14 +136,14 @@ namespace MutoRecipe
 
         private void timer2_Tick(object sender, EventArgs e)
         {
-            //var window = Win32.FindWindow("MapleStoryClass", "MapleStory");
-            var window = Win32.FindWindow("Photo_Lightweight_Viewer", null);
+            var window = Win32.FindWindow("MapleStoryClass", "MapleStory");
+            //var window = Win32.FindWindow("Photo_Lightweight_Viewer", null);
             if (window != IntPtr.Zero)
             {
                 Win32.GetWindowRect(window, out var mapleRect);
                 label1.Visible = false;
                 this.Size = new System.Drawing.Size(428, 179);
-                this.Top = mapleRect.Top + 5;
+                this.Top = mapleRect.Top + 20;
                 this.Left = mapleRect.Left + 3;
             }
             else
